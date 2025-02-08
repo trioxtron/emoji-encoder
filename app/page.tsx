@@ -7,7 +7,7 @@ export default function EncoderDecoder() {
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Hide a message in an Emoji</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Hide a message in an emoji</CardTitle>
         </CardHeader>
         <Suspense fallback={<CardContent>Loading...</CardContent>}>
           <Base64EncoderDecoderContent />
