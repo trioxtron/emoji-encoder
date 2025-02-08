@@ -12,7 +12,7 @@ export function toVariationSelector(byte: number): string | null {
     if (byte >= 0 && byte < 16) {
         return String.fromCodePoint(VARIATION_SELECTOR_START + byte)
     } else if (byte >= 16 && byte < 256) {
-        return String.fromCodePoint(VARIATION_SELECTOR_SUPPLEMENT_START + byte)
+        return String.fromCodePoint(VARIATION_SELECTOR_SUPPLEMENT_START + byte - 16)
     } else {
         return null
     }
@@ -22,7 +22,7 @@ export function fromVariationSelector(codePoint: number): number | null {
     if (codePoint >= VARIATION_SELECTOR_START && codePoint <= VARIATION_SELECTOR_END) {
         return codePoint - VARIATION_SELECTOR_START
     } else if (codePoint >= VARIATION_SELECTOR_SUPPLEMENT_START && codePoint <= VARIATION_SELECTOR_SUPPLEMENT_END) {
-        return codePoint - VARIATION_SELECTOR_SUPPLEMENT_START
+        return codePoint - VARIATION_SELECTOR_SUPPLEMENT_START + 16
     } else {
         return null
     }
