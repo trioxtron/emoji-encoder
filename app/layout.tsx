@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Encode anything as an emoji',
+  title: 'Hide a message in an emoji',
 }
 
 export default function RootLayout({
