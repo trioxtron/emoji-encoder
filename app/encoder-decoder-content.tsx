@@ -78,7 +78,7 @@ export function Base64EncoderDecoderContent() {
 
   return (
     <CardContent className="space-y-4">
-      <p>This tool allows you to encode a hidden message into an emoji. You can copy and paste an emoji with a hidden message in it to decode the message.</p>
+      <p>This tool allows you to encode a hidden message into an emoji or alphabet letter. You can copy and paste text with a hidden message in it to decode the message.</p>
 
       <div className="flex items-center justify-center space-x-2">
         <Label htmlFor="mode-toggle">Decode</Label>
