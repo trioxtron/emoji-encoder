@@ -14,25 +14,17 @@ export function Base64EncoderDecoderContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  // Read input state from URL parameters
+  // Read mode from URL parameters, other state stored locally
   const mode = searchParams.get("mode") || "encode"
-  const inputText = searchParams.get("input") || ""
-  const selectedEmoji = searchParams.get("emoji") || "😀"
-
-  // Store output state locally
+  const [inputText, setInputText] = useState("")
+  const [selectedEmoji, setSelectedEmoji] = useState("😀")
   const [outputText, setOutputText] = useState("")
   const [errorText, setErrorText] = useState("")
 
-  // Update URL when input state changes
-  const updateURL = (updates: Record<string, string>) => {
+  // Update URL when mode changes
+  const updateMode = (newMode: string) => {
     const params = new URLSearchParams(searchParams)
-    Object.entries(updates).forEach(([key, value]) => {
-      if (value) {
-        params.set(key, value)
-      } else {
-        params.delete(key)
-      }
-    })
+    params.set("mode", newMode)
     router.replace(`?${params.toString()}`)
   }
 
@@ -50,29 +42,16 @@ export function Base64EncoderDecoderContent() {
   }, [mode, selectedEmoji, inputText])
 
   const handleModeToggle = (checked: boolean) => {
-    const newMode = checked ? "encode" : "decode"
-    const params = {
-      mode: newMode,
-      input: ""
-    }
-    updateURL(newMode === "decode" ? params : { ...params, emoji: "" })
-  }
-
-  const handleEmojiSelect = (emoji: string) => {
-    updateURL({ emoji })
-  }
-
-  const handleInputChange = (value: string) => {
-    updateURL({ input: value })
+    updateMode(checked ? "encode" : "decode")
+    setInputText("") // Clear input text when mode changes
   }
 
   // Handle initial URL state
   useEffect(() => {
-    const params = new URLSearchParams(searchParams)
-    if (!params.has("mode")) {
-      updateURL({ mode: "encode" })
+    if (!searchParams.has("mode")) {
+      updateMode("encode")
     }
-  }, [])
+  }, [searchParams, updateMode])
 
   const isEncoding = mode === "encode"
 
@@ -89,13 +68,13 @@ export function Base64EncoderDecoderContent() {
       <Textarea
         placeholder={isEncoding ? "Enter text to encode" : "Paste an emoji to decode"}
         value={inputText}
-        onChange={(e) => handleInputChange(e.target.value)}
+        onChange={(e) => setInputText(e.target.value)}
         className="min-h-[100px]"
       />
 
       <div className="font-bold text-sm">Pick an emoji</div>
       <EmojiSelector
-        onEmojiSelect={handleEmojiSelect}
+        onEmojiSelect={setSelectedEmoji}
         selectedEmoji={selectedEmoji}
         emojiList={EMOJI_LIST}
         disabled={!isEncoding}
@@ -103,7 +82,7 @@ export function Base64EncoderDecoderContent() {
 
       <div className="font-bold text-sm">Or pick a standard alphabet letter</div>
       <EmojiSelector
-        onEmojiSelect={handleEmojiSelect}
+        onEmojiSelect={setSelectedEmoji}
         selectedEmoji={selectedEmoji}
         emojiList={ALPHABET_LIST}
         disabled={!isEncoding}
