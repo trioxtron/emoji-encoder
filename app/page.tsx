@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,35 +12,70 @@ import { EmojiSelector } from "@/components/emoji-selector"
 import { EMOJI_LIST } from "./emoji"
 
 export default function Base64EncoderDecoder() {
-  const [input, setInput] = useState("")
-  const [emoji, setEmoji] = useState("😀")
-  const [output, setOutput] = useState("")
-  const [isEncoding, setIsEncoding] = useState(true)
-  const [error, setError] = useState("")
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
-  const handleConvert = () => {
-    try {
-      if (isEncoding) {
-        setOutput(encode(emoji, input))
+  // Read input state from URL parameters
+  const mode = searchParams.get("mode") || "encode"
+  const inputText = searchParams.get("input") || ""
+  const selectedEmoji = searchParams.get("emoji") || "😀"
+
+  // Store output state locally
+  const [outputText, setOutputText] = useState("")
+  const [errorText, setErrorText] = useState("")
+
+  // Update URL when input state changes
+  const updateURL = (updates: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams)
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value)
       } else {
-        setOutput(decode(input))
+        params.delete(key)
       }
-      setError("")
-    } catch (e) {
-      setError(`Error ${isEncoding ? "encoding" : "decoding"}: Invalid input`)
-    }
+    })
+    router.replace(`?${params.toString()}`)
   }
 
+  // Convert input whenever it changes
+  useEffect(() => {
+    try {
+      const isEncoding = mode === "encode"
+      const output = isEncoding ? encode(selectedEmoji, inputText) : decode(inputText)
+      setOutputText(output)
+      setErrorText("")
+    } catch (e) {
+      setOutputText("")
+      setErrorText(`Error ${mode === "encode" ? "encoding" : "decoding"}: Invalid input`)
+    }
+  }, [mode, selectedEmoji, inputText])
+
   const handleModeToggle = (checked: boolean) => {
-    setIsEncoding(checked)
-    setInput("")
-    setOutput("")
-    setError("")
+    const newMode = checked ? "encode" : "decode"
+    const params = {
+      mode: newMode,
+      input: ""
+    }
+    updateURL(newMode === "decode" ? params : { ...params, emoji: "" })
   }
 
   const handleEmojiSelect = (emoji: string) => {
-    setEmoji(emoji)
+    updateURL({ emoji })
   }
+
+  const handleInputChange = (value: string) => {
+    updateURL({ input: value })
+  }
+
+  // Handle initial URL state
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams)
+    if (!params.has("mode")) {
+      updateURL({ mode: "encode" })
+    }
+  }, [])
+
+  const isEncoding = mode === "encode"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center p-4">
@@ -58,31 +94,28 @@ export default function Base64EncoderDecoder() {
 
           <Textarea
             placeholder={isEncoding ? "Enter text to encode" : "Paste an emoji to decode"}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            value={inputText}
+            onChange={(e) => handleInputChange(e.target.value)}
             className="min-h-[100px]"
           />
 
-          <EmojiSelector onEmojiSelect={handleEmojiSelect} selectedEmoji={emoji} emojiList={EMOJI_LIST} disabled={!isEncoding} />
-
-          <Button
-            onClick={handleConvert}
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-          >
-            {isEncoding ? "Encode" : "Decode"}
-          </Button>
+          <EmojiSelector
+            onEmojiSelect={handleEmojiSelect}
+            selectedEmoji={selectedEmoji}
+            emojiList={EMOJI_LIST}
+            disabled={!isEncoding}
+          />
 
           <Textarea
             placeholder={`${isEncoding ? "Encoded" : "Decoded"} output`}
-            value={output}
+            value={outputText}
             readOnly
             className="min-h-[100px]"
           />
 
-          {error && <div className="text-red-500 text-center">{error}</div>}
+          {errorText && <div className="text-red-500 text-center">{errorText}</div>}
         </CardContent>
       </Card>
     </div>
   )
 }
-
