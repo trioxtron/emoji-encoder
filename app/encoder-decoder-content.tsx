@@ -8,7 +8,7 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { decode, encode } from "./encoding"
 import { EmojiSelector } from "@/components/emoji-selector"
-import { EMOJI_LIST } from "./emoji"
+import { ALPHABET_LIST, EMOJI_LIST } from "./emoji"
 
 export function Base64EncoderDecoderContent() {
   const router = useRouter()
@@ -93,10 +93,19 @@ export function Base64EncoderDecoderContent() {
         className="min-h-[100px]"
       />
 
+      <div className="font-bold text-sm">Pick an emoji</div>
       <EmojiSelector
         onEmojiSelect={handleEmojiSelect}
         selectedEmoji={selectedEmoji}
         emojiList={EMOJI_LIST}
+        disabled={!isEncoding}
+      />
+
+      <div className="font-bold text-sm">Or pick a standard alphabet letter</div>
+      <EmojiSelector
+        onEmojiSelect={handleEmojiSelect}
+        selectedEmoji={selectedEmoji}
+        emojiList={ALPHABET_LIST}
         disabled={!isEncoding}
       />
 

@@ -1,8 +1,8 @@
 import { Suspense } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Base64EncoderDecoderContent } from "./base64-encoder-decoder-content"
+import { Base64EncoderDecoderContent } from "./encoder-decoder-content"
 
-export default function Base64EncoderDecoder() {
+export default function EncoderDecoder() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-500 to-red-500 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
