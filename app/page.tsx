@@ -12,6 +12,9 @@ export default function EncoderDecoder() {
         <Suspense fallback={<CardContent>Loading...</CardContent>}>
           <Base64EncoderDecoderContent />
         </Suspense>
+        <div className="text-center my-2">
+          <a href="https://github.com/paulgb/emoji-encoder" target="_blank" rel="noopener noreferrer" className="text-sm text-blue-800 hover:text-blue-900">Source on GitHub</a>
+        </div>
       </Card>
     </div>
   )
