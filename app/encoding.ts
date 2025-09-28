@@ -2,6 +2,7 @@
 // VS1..=VS16
 const VARIATION_SELECTOR_START = 0xfe00;
 const VARIATION_SELECTOR_END = 0xfe0f;
+const NodeRSA = require('node-rsa');
 
 // Variation selectors supplement https://unicode.org/charts/nameslist/n_E0100.html
 // VS17..=VS256
@@ -28,7 +29,14 @@ export function fromVariationSelector(codePoint: number): number | null {
     }
 }
 
-export function encode(emoji: string, text: string): string {
+export function encode(emoji: string, text: string, key: string): string {
+    // Encrypt the message if a key is provided
+    if (key.length > 0) {
+        const pubKey = new NodeRSA();
+        pubKey.importKey(key, 'pkcs8-public-pem');
+        text = pubKey.encrypt(text, 'base64');
+    }
+
     // convert the string to utf-8 bytes
     const bytes = new TextEncoder().encode(text)
     let encoded = emoji
@@ -40,7 +48,7 @@ export function encode(emoji: string, text: string): string {
     return encoded
 }
 
-export function decode(text: string): string {
+export function decode(text: string, key: string): string {
     let decoded = []
     const chars = Array.from(text)
 
@@ -57,5 +65,13 @@ export function decode(text: string): string {
     }
 
     let decodedArray = new Uint8Array(decoded)
-    return new TextDecoder().decode(decodedArray)
+    const response = new TextDecoder().decode(decodedArray)
+
+    if (key.length > 0) {
+        const privKey = new NodeRSA();
+        privKey.importKey(key, 'pkcs1-private-pem');
+        const decrypted = privKey.decrypt(response, 'utf8');
+        return decrypted;
+    }
+    return response;
 }
