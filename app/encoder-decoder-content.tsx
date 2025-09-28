@@ -50,6 +50,7 @@ export function Base64EncoderDecoderContent() {
 
   const handleEncryptToggle = () => {
     setEncryptMode(!encryptMode)
+    setKey("") // Clear key when toggling encryption
   }
 
   // Handle initial URL state
