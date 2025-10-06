@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { CardContent } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { decode, encode } from "./encoding"
+import { generateKeyPair, decode, encode } from "./encoding"
 import { EmojiSelector } from "@/components/emoji-selector"
 import { ALPHABET_LIST, EMOJI_LIST } from "./emoji"
 
@@ -19,6 +19,7 @@ export function Base64EncoderDecoderContent() {
   const [encryptMode, setEncryptMode] = useState(false)
   const [inputText, setInputText] = useState("")
   const [key, setKey] = useState("")
+  const [isGeneratingKeys, setIsGeneratingKeys] = useState(false);
   const [selectedEmoji, setSelectedEmoji] = useState("😀")
   const [outputText, setOutputText] = useState("")
   const [errorText, setErrorText] = useState("")
@@ -46,11 +47,26 @@ export function Base64EncoderDecoderContent() {
   const handleModeToggle = (checked: boolean) => {
     updateMode(checked ? "encode" : "decode")
     setInputText("") // Clear input text when mode changes
+    setKey("") // Clear key when mode changes
   }
 
   const handleEncryptToggle = () => {
     setEncryptMode(!encryptMode)
     setKey("") // Clear key when toggling encryption
+  }
+  
+  const handleGenerateKeypair = async () => {
+    setIsGeneratingKeys(true); // Start loading
+    try {
+        let { publicKey, privateKey } = await generateKeyPair()
+        console.log(publicKey, privateKey)
+        window.alert(`Public Key:\n${publicKey}\n\nPrivate Key:\n${privateKey}\n\nMake sure to copy the private key somewhere safe!`)
+    } catch (error) {
+        window.alert("An error occurred while generating the key pair.");
+        setIsGeneratingKeys(false); // Stop loading
+    } finally {
+        setIsGeneratingKeys(false); // Stop loading
+    }
   }
 
   // Handle initial URL state
@@ -85,12 +101,16 @@ export function Base64EncoderDecoderContent() {
       </div>
 
       {encryptMode && (
-          <Textarea
-            placeholder={isEncoding ? "Enter public key to encode" : "Enter private key to decode"}
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-            className="min-h-[100px]"
-          />
+          <div className="flex flex-col items-center justify-center space-x-2">
+              <Textarea
+              placeholder={isEncoding ? "Enter public key to encode" : "Enter private key to decode"}
+              value={key}
+              onChange={(e) => setKey(e.target.value)}
+              className="min-h-[100px]"
+              />
+              {!isGeneratingKeys && <button className="bg-pink-500 text-white px-2 py-1 rounded mt-2" onClick={handleGenerateKeypair}>Generate Key Pair</button>}
+              {isGeneratingKeys && <p className="text-sm">Generating...</p>}
+          </div>
       )}
 
       <div className="font-bold text-sm">Pick an emoji</div>

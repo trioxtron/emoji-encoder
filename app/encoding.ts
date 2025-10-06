@@ -29,6 +29,32 @@ export function fromVariationSelector(codePoint: number): number | null {
     }
 }
 
+export async function generateKeyPair(): Promise<{ publicKey: string; privateKey: string }> {
+    const keyPair = await crypto.subtle.generateKey(
+        { name: "RSA-OAEP", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+        true,
+        ["encrypt", "decrypt"]
+    );
+
+    const [spki, pkcs8] = await Promise.all([
+        crypto.subtle.exportKey("spki", keyPair.publicKey),
+        crypto.subtle.exportKey("pkcs8", keyPair.privateKey),
+    ]);
+
+    const toPem = (b: ArrayBuffer, header: string, footer: string) => {
+        const raw = String.fromCharCode(...new Uint8Array(b));
+        const b64 = btoa(raw);
+        const body = b64.replace(/.{1,64}/g, '$&\n');
+        return `${header}\n${body}\n${footer}`;
+    };
+
+    return {
+        publicKey: toPem(spki, "-----BEGIN PUBLIC KEY-----", "-----END PUBLIC KEY-----"),
+        privateKey: toPem(pkcs8, "-----BEGIN PRIVATE KEY-----", "-----END PRIVATE KEY-----"),
+    };
+}
+
+
 export function encode(emoji: string, text: string, key: string): string {
     // Encrypt the message if a key is provided
     if (key.length > 0) {
@@ -69,7 +95,7 @@ export function decode(text: string, key: string): string {
 
     if (key.length > 0) {
         const privKey = new NodeRSA();
-        privKey.importKey(key, 'pkcs1-private-pem');
+        privKey.importKey(key, 'pkcs8-private-pem');
         const decrypted = privKey.decrypt(response, 'utf8');
         return decrypted;
     }
